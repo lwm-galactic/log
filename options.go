@@ -44,9 +44,9 @@ const (
 	jsonFormat    = "json"
 )
 
-// newDefaultOptions 返回一个带有默认配置的 options 实例
-func newDefaultOptions() *options {
-	return &options{
+// NewDefaultOptions 返回一个带有默认配置的 options 实例
+func NewDefaultOptions() *Options {
+	return &Options{
 		Level:             InfoLevel,                      // 默认日志等级为 InfoLevel
 		Format:            consoleFormat,                  // 默认输出格式为控制台格式
 		OutputPaths:       []OutputPath{StdoutOutputPath}, // 默认输出到 stdout
@@ -71,29 +71,29 @@ const (
 	StdoutOutputPath OutputPath = "stdout"
 )
 
-type options struct {
-	OutputPaths       []OutputPath `mapstructure:"output-paths"`       // stdout / file
-	FilePath          string       `mapstructure:"file"`               // 文件路径
-	ErrorOutputPaths  []string     `mapstructure:"error-output-paths"` // zap 内部错误日志输出路径
-	Level             Level        `mapstructure:"level"`              // 日志等级
-	Format            string       `mapstructure:"format"`             // 输出格式化(JSON / TEXT)
-	DisableCaller     bool         `mapstructure:"disable-caller"`     //
-	DisableStacktrace bool         `mapstructure:"disable-stacktrace"` //
+type Options struct {
+	OutputPaths       []OutputPath // stdout / file
+	FilePath          string       // 文件路径
+	ErrorOutputPaths  []string     // zap 内部错误日志输出路径
+	Level             Level        // 日志等级
+	Format            string       // 输出格式化(JSON / TEXT)
+	DisableCaller     bool         //
+	DisableStacktrace bool         //
 
-	EnableColor bool `mapstructure:"enable-color"` // 开启颜色
-	Development bool `mapstructure:"development"`  // 是否为开发模式
+	EnableColor bool // 开启颜色
+	Development bool // 是否为开发模式
 
 	// 新增的日志轮转配置项
-	MaxSize    int  `mapstructure:"max-size"`    // MB
-	MaxBackups int  `mapstructure:"max-backups"` // 最多保留多少个备份文件
-	MaxAge     int  `mapstructure:"max-age"`     // 文件最多保留几天
-	Compress   bool `mapstructure:"compress"`    // 是否压缩旧文件
+	MaxSize    int  // MB
+	MaxBackups int  // 最多保留多少个备份文件
+	MaxAge     int  // 文件最多保留几天
+	Compress   bool // 是否压缩旧文件
 
-	Name string `mapstructure:"name"`
+	Name string
 }
 
 // Build 构建一个zap.logger 日志
-func (o *options) build() (*zap.Logger, error) {
+func (o *Options) build() (*zap.Logger, error) {
 	var zapLevel zapcore.Level
 	if err := zapLevel.UnmarshalText([]byte(LevelNameMapping[o.Level])); err != nil {
 		zapLevel = zapcore.InfoLevel
@@ -164,7 +164,7 @@ func (o *options) build() (*zap.Logger, error) {
 	return logger, nil
 }
 
-func (o *options) Validate() []error {
+func (o *Options) Validate() []error {
 	var errs []error
 
 	format := strings.ToLower(o.Format)
@@ -198,52 +198,52 @@ func (o *options) AddFlags(fs *pflag.FlagSet) {
 }
 */
 
-type Option func(*options)
+type Option func(*Options)
 
 func WithLevel(level Level) Option {
-	return func(o *options) { o.Level = level }
+	return func(o *Options) { o.Level = level }
 }
 
 func WithOutputPaths(outputPaths ...OutputPath) Option {
-	return func(o *options) { o.OutputPaths = outputPaths }
+	return func(o *Options) { o.OutputPaths = outputPaths }
 }
 
 func WithErrorOutputPaths(errorOutputPaths []string) Option {
-	return func(o *options) { o.ErrorOutputPaths = errorOutputPaths }
+	return func(o *Options) { o.ErrorOutputPaths = errorOutputPaths }
 }
 
 func WithDisableCaller(disableCaller bool) Option {
-	return func(o *options) { o.DisableCaller = disableCaller }
+	return func(o *Options) { o.DisableCaller = disableCaller }
 }
 
 func WithDisableStacktrace(disableStacktrace bool) Option {
-	return func(o *options) { o.DisableStacktrace = disableStacktrace }
+	return func(o *Options) { o.DisableStacktrace = disableStacktrace }
 }
 
 func WithEnableColor(enableColor bool) Option {
-	return func(o *options) { o.EnableColor = enableColor }
+	return func(o *Options) { o.EnableColor = enableColor }
 }
 
 func WithName(n string) Option {
-	return func(o *options) { o.Name = n }
+	return func(o *Options) { o.Name = n }
 }
 func WithDevelopment(development bool) Option {
-	return func(o *options) { o.Development = development }
+	return func(o *Options) { o.Development = development }
 }
 func WithMaxSize(maxSize int) Option {
-	return func(o *options) { o.MaxSize = maxSize }
+	return func(o *Options) { o.MaxSize = maxSize }
 }
 func WithMaxBackups(maxBackups int) Option {
-	return func(o *options) { o.MaxBackups = maxBackups }
+	return func(o *Options) { o.MaxBackups = maxBackups }
 }
 func WithMaxAge(maxAge int) Option {
-	return func(o *options) { o.MaxAge = maxAge }
+	return func(o *Options) { o.MaxAge = maxAge }
 }
 func WithCompress(compress bool) Option {
-	return func(o *options) { o.Compress = compress }
+	return func(o *Options) { o.Compress = compress }
 }
 func WithFilePath(filePath string) Option {
-	return func(o *options) { o.FilePath = filePath }
+	return func(o *Options) { o.FilePath = filePath }
 }
 func (l *Logger) SetOptions(opts ...Option) {
 	l.mu.Lock()

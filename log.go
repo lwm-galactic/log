@@ -38,15 +38,20 @@ type ILogger interface {
 	Flush()
 }
 type Logger struct {
-	opt       *options
+	opt       *Options
 	logger    *zap.Logger
 	mu        sync.Mutex
 	entryPool *sync.Pool
 }
 
+func NewLoggerByOption(options *Options) ILogger {
+	return &Logger{
+		opt: options,
+	}
+}
 func NewLogger() ILogger {
 	return &Logger{
-		opt: newDefaultOptions(),
+		opt: NewDefaultOptions(),
 	}
 }
 
